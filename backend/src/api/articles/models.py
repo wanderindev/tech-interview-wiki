@@ -29,7 +29,6 @@ class Article(db.Model):
     content = db.Column(db.Text, nullable=True)
 
     # AI Generation Fields
-    research_prompt = db.Column(db.Text, nullable=True)
     research_result = db.Column(db.Text, nullable=True)
 
     # Status tracking

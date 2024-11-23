@@ -27,7 +27,6 @@ def upgrade():
     sa.Column('category', sa.String(length=100), nullable=False),
     sa.Column('tags', postgresql.ARRAY(sa.String(length=50)), nullable=False),
     sa.Column('content', sa.Text(), nullable=True),
-    sa.Column('research_prompt', sa.Text(), nullable=True),
     sa.Column('research_result', sa.Text(), nullable=True),
     sa.Column('is_generated', sa.Boolean(), nullable=False),
     sa.Column('generation_started_at', sa.DateTime(), nullable=True),
