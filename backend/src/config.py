@@ -14,7 +14,7 @@ class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
-        "postgresql://postgres:postgres@localhost:5432/coding_interview_ai",
+        "postgresql://postgres:postgres@localhost:5432/tech_interview_wiki",
     )
 
     # Redis
@@ -41,7 +41,7 @@ class TestingConfig(BaseConfig):
 
     TESTING = True
     SQLALCHEMY_DATABASE_URI = (
-        "postgresql://postgres:postgres@localhost:5432/coding_interview_ai_test"
+        "postgresql://postgres:postgres@localhost:5432/tech_interview_wiki_test"
     )
 
 

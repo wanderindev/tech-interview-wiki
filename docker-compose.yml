@@ -10,7 +10,7 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/coding_interview_ai
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/tech_interview_wiki
       - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=coding_interview_ai
+      - POSTGRES_DB=tech_interview_wiki
     ports:
       - "5432:5432"
     volumes:

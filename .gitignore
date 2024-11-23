@@ -1,0 +1,39 @@
+# Project-specific
+backend/.env
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Virtual Environment
+venv/
+env/
+.env/
+
+# Docker
+.docker/
+
+# Database
+*.sqlite
+*.db
+
+# Logs
+*.log
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# Redis dump
+dump.rdb
