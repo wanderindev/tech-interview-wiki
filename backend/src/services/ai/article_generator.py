@@ -59,6 +59,7 @@ class ArticleGenerator:
             Article.tags,
         ).all()
 
+        # noinspection PyProtectedMember
         content, related_articles_data = self.anthropic_client.generate_article_content(
             title=title,
             level=level,

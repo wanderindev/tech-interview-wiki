@@ -33,7 +33,7 @@ class OpenAIClient:
         """Generate research document using OpenAI API."""
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="o1-preview",
                 messages=[
                     {
                         "role": "system",
@@ -41,8 +41,8 @@ class OpenAIClient:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                temperature=0.7,
-                max_tokens=2048,
+                temperature=0.3,
+                max_tokens=4096,
             )
 
             return response.choices[0].message.content
