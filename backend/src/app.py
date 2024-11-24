@@ -25,7 +25,10 @@ def create_app(config_name=None):
     # Register blueprints
     from api.articles import articles_bp
 
+    from api.graphql import graphql_bp
+
     app.register_blueprint(articles_bp, url_prefix="/api/articles")
+    app.register_blueprint(graphql_bp, url_prefix="/api")
 
     # Register CLI commands
     app.cli.add_command(populate_db_command)
