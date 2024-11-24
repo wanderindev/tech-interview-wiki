@@ -16,6 +16,19 @@ services:
       - db
       - redis
 
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+    command: npm run dev
+
   db:
     image: postgres:15
     environment:
