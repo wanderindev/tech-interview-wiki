@@ -27,6 +27,7 @@ class Article(db.Model):
 
     # Content
     content = db.Column(db.Text, nullable=True)
+    word_count = db.Column(db.Integer, nullable=False, default=0)
 
     # AI Generation Fields
     research_result = db.Column(db.Text, nullable=True)
@@ -94,6 +95,12 @@ class Article(db.Model):
         db.session.add(article)
         db.session.commit()
         return article
+
+    def update_word_count(self):
+        if self.content:
+            self.word_count = len(self.content.split())
+        else:
+            self.word_count = 0
 
 
 article_relationships = db.Table(

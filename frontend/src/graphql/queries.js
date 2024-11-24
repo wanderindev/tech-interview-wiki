@@ -1,25 +1,29 @@
 import {gql} from '@apollo/client';
-import {DocumentNode} from 'graphql';
 
-export const GET_TAXONOMIES: DocumentNode = gql`
+export const GET_TAXONOMIES = gql`
     query GetTaxonomies {
         allTaxonomies {
-            taxonomy
             categories
+            taxonomy
             totalArticles
         }
     }
 `;
 
-export const GET_ARTICLES_BY_TAXONOMY: DocumentNode = gql`
+export const GET_ARTICLES_BY_TAXONOMY = gql`
     query GetArticlesByTaxonomy($taxonomy: String!) {
         articlesByTaxonomy(taxonomy: $taxonomy) {
-            id
-            title
-            slug
-            level
             category
+            content
+            id
+            isGenerated
+            level
+            slug
             tags
+            taxonomy
+            title
+            updatedAt
+            wordCount
         }
     }
 `;
