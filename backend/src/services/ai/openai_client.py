@@ -36,13 +36,11 @@ class OpenAIClient:
                 model="o1-preview",
                 messages=[
                     {
-                        "role": "system",
+                        "role": "assistant",
                         "content": "You are a technical writer researching content for programming interview preparation articles.",
                     },
                     {"role": "user", "content": prompt},
                 ],
-                temperature=0.3,
-                max_tokens=4096,
             )
 
             return response.choices[0].message.content
