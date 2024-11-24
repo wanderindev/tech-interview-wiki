@@ -5,7 +5,7 @@ from sqlalchemy import func
 
 from api.articles.models import Article
 from extensions import db
-from .types import ArticleType, TaxonomyStats, CategoryStats, Level
+from .types import ArticleType, TaxonomyStats, CategoryStats, ArticleLevelEnum
 
 
 @strawberry.type
@@ -53,11 +53,11 @@ class Query:
         return [ArticleType.from_orm(article) for article in query.all()]
 
     @strawberry.field(description="Get articles by difficulty level")
-    def articles_by_level(self, level: Level) -> List[ArticleType]:
+    def articles_by_level(self, level: ArticleLevelEnum) -> List[ArticleType]:
         return Query.resolve_articles_by_level(level)
 
     @staticmethod
-    def resolve_articles_by_level(level: Level) -> List[ArticleType]:
+    def resolve_articles_by_level(level: ArticleLevelEnum) -> List[ArticleType]:
         articles = Article.query.filter_by(level=level.value).all()
         return [ArticleType.from_orm(article) for article in articles]
 

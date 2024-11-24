@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, Optional
 
 import strawberry
@@ -6,11 +7,14 @@ import strawberry
 from api.articles.models import Article
 
 
-@strawberry.enum
-class Level:
+class Level(Enum):
     BASIC = "basic"
     INTERMEDIATE = "intermediate"
     ADVANCED = "advanced"
+
+
+ArticleLevelEnum = strawberry.enum(Level)
+
 
 @dataclass
 @strawberry.type
@@ -41,12 +45,14 @@ class ArticleType:
             updated_at=article.updated_at.isoformat() if article.updated_at else None,
         )
 
+
 @dataclass
 @strawberry.type
 class TaxonomyStats:
     taxonomy: str
     total_articles: int
     categories: List[str]
+
 
 @dataclass
 @strawberry.type
