@@ -45,8 +45,7 @@ The research will be used to write an article that helps developers prepare for 
 Please provide comprehensive research that will allow us to write an informative article.
 """
 
-ARTICLE_GENERATION_PROMPT = """
-You are writing a technical article for a programming interview preparation website.
+ARTICLE_GENERATION_PROMPT = """You are writing a technical article for a programming interview preparation website.
 
 Context:
 - Title: {title}
@@ -64,23 +63,39 @@ Research Document:
 
 Requirements:
 1. Write the article in Markdown format
-2. Keep the content technical and precise
-3. Include code examples where relevant
-4. Focus on interview preparation
-5. Use a professional but engaging tone
-6. Include interview-specific tips
-7. Stay within the word limit
+2. Base the content on the provided research document
+3. Keep the content technical and precise
+4. Include code examples where relevant
+5. Focus on interview preparation
+6. Use a professional but engaging tone
+7. Include interview-specific tips
+8. Stay within the word limit
 
-After the article, suggest 5 related articles we should create next. For each one provide:
-- title: string
-- taxonomy: string (same options as current article)
-- category: string
-- level: one of [basic, intermediate, advanced]
-- tags: array of strings
+For related articles:
+- CAREFULLY review the existing articles list provided above
+- If you suggest an article that's very similar to an existing one (similar title, same category, or overlapping tags), use the existing article's ID
+- Avoid suggesting articles that would duplicate existing content
+- Each suggestion should be clearly distinct from existing articles
 
-Format the related articles as a JSON array.
+After your article content, include exactly one blank line followed by:
 
-If any of your suggestions match or are very similar to existing articles in our database, instead of creating new ones, reference the existing articles by their IDs.
+RELATED_ARTICLES_START
+{{
+    "articles": [
+        {{
+            "title": "Example Title",
+            "taxonomy": "Example Taxonomy",
+            "category": "Example Category",
+            "level": "basic",
+            "tags": ["tag1", "tag2"]
+        }},
+        ... 4 more articles ...
+    ],
+    "existing_articles_map": {{
+        "0": "ID of existing article if suggestion 1 matches an existing article",
+        "1": "ID of existing article if suggestion 2 matches an existing article"
+    }}
+}}
+RELATED_ARTICLES_END
 
-Begin with the article content in Markdown:
-"""
+Begin the article content:"""
