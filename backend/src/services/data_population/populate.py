@@ -2,6 +2,7 @@ import logging
 import time
 
 from api.articles.models import Article, ArticleLevel
+from api.articles.utils import generate_slug
 from extensions import db
 from services.ai.article_generator import ArticleGenerator
 from .initial_articles import INITIAL_ARTICLES
@@ -60,6 +61,7 @@ class DatabasePopulator:
                 # Create new article with metadata only
                 article = Article(
                     title=article_data["title"],
+                    slug=generate_slug(article_data["title"]),
                     taxonomy=article_data["taxonomy"],
                     category=article_data["category"],
                     level=ArticleLevel[article_data["level"].upper()],
