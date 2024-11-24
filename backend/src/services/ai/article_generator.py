@@ -1,4 +1,5 @@
-from typing import List, Tuple
+from difflib import SequenceMatcher
+from typing import Any, Dict, List, Optional, Tuple
 
 from flask import current_app
 
@@ -7,6 +8,52 @@ from api.articles.utils import generate_slug
 from extensions import db
 from .anthropic_client import AnthropicClient
 from .openai_client import OpenAIClient
+
+
+class ArticleMatcher:
+    TITLE_SIMILARITY_THRESHOLD = 0.85
+
+    @staticmethod
+    def compute_similarity(str1: str, str2: str) -> float:
+        """Compute string similarity ratio."""
+        return SequenceMatcher(None, str1.lower(), str2.lower()).ratio()
+
+    @staticmethod
+    def find_similar_article(
+        new_article: Dict[str, Any], existing_articles: List[Dict[str, Any]]
+    ) -> Optional[int]:
+        """Find if a similar article exists in the database."""
+        for existing in existing_articles:
+            # Check exact title match
+            if new_article["title"].lower() == existing["title"].lower():
+                return existing["id"]
+
+            # Check title similarity
+            if (
+                ArticleMatcher.compute_similarity(
+                    new_article["title"], existing["title"]
+                )
+                > ArticleMatcher.TITLE_SIMILARITY_THRESHOLD
+            ):
+                # Additional validation: check category and taxonomy match
+                if (
+                    new_article["category"] == existing["category"]
+                    and new_article["taxonomy"] == existing["taxonomy"]
+                ):
+                    return existing["id"]
+
+            # Check tag overlap
+            common_tags = set(new_article["tags"]) & set(existing["tags"])
+            if len(common_tags) >= 3:  # If 3 or more tags match
+                if (
+                    ArticleMatcher.compute_similarity(
+                        new_article["title"], existing["title"]
+                    )
+                    > 0.7
+                ):  # Lower threshold if tags match
+                    return existing["id"]
+
+        return None
 
 
 class ArticleGenerator:
@@ -51,17 +98,30 @@ class ArticleGenerator:
                 current_app.logger.info(f"Saved research document for article: {title}")
 
             # Generate or update the article content
-            return self.generate_article(
-                title=title,
-                level=level,
-                taxonomy=taxonomy,
-                category=category,
-                tags=tags,
-                research_document=research_document,
-            )
+            try:
+                return self.generate_article(
+                    title=title,
+                    level=level,
+                    taxonomy=taxonomy,
+                    category=category,
+                    tags=tags,
+                    research_document=research_document,
+                )
+            except Exception as article_error:
+                current_app.logger.error(
+                    f"Error in generate_article: {str(article_error)}"
+                )
+                current_app.logger.error(
+                    f"Research document: {research_document[:200]}..."
+                )
+                raise
 
         except Exception as e:
-            current_app.logger.error(f"Error in research_and_generate_article: {e}")
+            current_app.logger.error(
+                f"Error in research_and_generate_article: {str(e)}"
+            )
+            current_app.logger.error(f"Full error type: {type(e)}")
+            current_app.logger.error(f"Error args: {e.args}")
             raise
 
     def generate_article(
@@ -74,21 +134,21 @@ class ArticleGenerator:
         research_document: str,
     ) -> Tuple[Article, List[Article]]:
         """Generate article content and create related article records."""
+        # Get existing articles for context
         existing_articles = Article.query.with_entities(
             Article.id,
             Article.title,
-            Article.slug,
             Article.taxonomy,
             Article.category,
             Article.level,
             Article.tags,
         ).all()
 
+        # Convert to dictionary and handle enum serialization
         existing_articles_data = [
             {
                 "id": art.id,
                 "title": art.title,
-                "slug": art.slug,
                 "taxonomy": art.taxonomy,
                 "category": art.category,
                 "level": art.level.value,
@@ -97,6 +157,7 @@ class ArticleGenerator:
             for art in existing_articles
         ]
 
+        # Generate content using Anthropic
         content, related_articles_data = self.anthropic_client.generate_article_content(
             title=title,
             level=level,
@@ -107,35 +168,45 @@ class ArticleGenerator:
             existing_articles=existing_articles_data,
         )
 
-        # Update the existing article with generated content
-        article = Article.query.filter_by(title=title).first()
-        if not article:
-            raise ValueError(f"Article with title '{title}' not found in database")
-
-        # Update the article with generated content
-        article.content = content
-        article.research_result = research_document
-        article.is_generated = True
-
+        # Process related articles with similarity checking
         related_articles = []
-        for related_data in related_articles_data:
-            if "id" in related_data:  # Reference to existing article
-                related_article = Article.query.get(related_data["id"])
-            else:  # New article suggestion
-                related_article = Article(
-                    title=related_data["title"],
-                    slug=generate_slug(related_data["title"]),
-                    level=ArticleLevel[related_data["level"].upper()],
-                    taxonomy=related_data["taxonomy"],
-                    category=related_data["category"],
-                    tags=related_data["tags"],
-                    is_generated=False,
+        for article_data in related_articles_data:
+            if "id" in article_data:
+                # Direct reference to existing article
+                related_article = Article.query.get(article_data["id"])
+            else:
+                # Check for similar existing articles
+                similar_id = ArticleMatcher.find_similar_article(
+                    article_data, existing_articles_data
                 )
-                db.session.add(related_article)
+
+                if similar_id:
+                    related_article = Article.query.get(similar_id)
+                    current_app.logger.info(
+                        f"Found similar existing article: {related_article.title}"
+                    )
+                else:
+                    # Create new article
+                    related_article = Article(
+                        title=article_data["title"],
+                        slug=generate_slug(article_data["title"]),
+                        level=ArticleLevel[article_data["level"].upper()],
+                        taxonomy=article_data["taxonomy"],
+                        category=article_data["category"],
+                        tags=article_data["tags"],
+                        is_generated=False,
+                    )
+                    db.session.add(related_article)
 
             related_articles.append(related_article)
 
+        # Update the existing article
+        article = Article.query.filter_by(title=title).first()
+        article.content = content
+        article.research_result = research_document
+        article.is_generated = True
         article.related_articles = related_articles
+
         db.session.commit()
 
         return article, related_articles
