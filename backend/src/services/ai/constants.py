@@ -73,7 +73,6 @@ Requirements:
 
 After the article, suggest 5 related articles we should create next. For each one provide:
 - title: string
-- slug: string (URL-friendly version of title)
 - taxonomy: string (same options as current article)
 - category: string
 - level: one of [basic, intermediate, advanced]
