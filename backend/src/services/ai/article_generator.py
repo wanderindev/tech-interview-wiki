@@ -15,7 +15,7 @@ class ArticleGenerator:
         self.openai_client = OpenAIClient()
 
     def research_and_generate_article(
-            self, title: str, level: str, taxonomy: str, category: str, tags: List[str]
+        self, title: str, level: str, taxonomy: str, category: str, tags: List[str]
     ) -> Tuple[Article, List[Article]]:
         """Complete workflow to research and generate an article."""
         try:
@@ -26,10 +26,14 @@ class ArticleGenerator:
 
             # Check if we already have research document
             if article.research_result:
-                current_app.logger.info(f"Using existing research document for article: {title}")
+                current_app.logger.info(
+                    f"Using existing research document for article: {title}"
+                )
                 research_document = article.research_result
             else:
-                current_app.logger.info(f"Generating new research document for article: {title}")
+                current_app.logger.info(
+                    f"Generating new research document for article: {title}"
+                )
                 research_prompt = OpenAIClient.generate_research_prompt(
                     title=title,
                     level=level,
@@ -37,7 +41,9 @@ class ArticleGenerator:
                     category=category,
                     tags=tags,
                 )
-                research_document = self.openai_client.generate_research(research_prompt)
+                research_document = self.openai_client.generate_research(
+                    research_prompt
+                )
 
                 # Save the research document immediately
                 article.research_result = research_document
