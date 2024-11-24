@@ -74,48 +74,81 @@ class AnthropicClient:
     def _parse_response(content: str) -> Tuple[str, List[Dict]]:
         """Parse the response to separate article content from related articles."""
         try:
-            # Look for the Suggested Related Articles section
-            marker = "Suggested Related Articles:"
-            json_start = content.find(marker)
+            # Look for the specific markers
+            start_marker = "RELATED_ARTICLES_START"
+            end_marker = "RELATED_ARTICLES_END"
+
+            json_start = content.find(start_marker)
+            json_end = content.find(end_marker)
 
             if json_start == -1:
-                current_app.logger.error(
-                    "No 'Suggested Related Articles:' section found"
-                )
+                current_app.logger.error("No 'RELATED_ARTICLES_START' marker found")
                 raise ValueError("Response does not contain related articles section")
 
-            # Find the JSON array after the marker
-            json_content = content[json_start + len(marker) :].strip()
+            if json_end == -1:
+                current_app.logger.error("No 'RELATED_ARTICLES_END' marker found")
+                raise ValueError("Response does not contain end marker")
 
-            # If the JSON is wrapped in ```json ```, remove it
-            if json_content.startswith("```json"):
-                json_content = json_content[7:].strip()  # Remove ```json
-                json_content = json_content.rstrip("`")  # Remove trailing backticks
-
-            # Get everything before the JSON as article content
+            # Extract the article content and JSON content
             article_content = content[:json_start].strip()
+            json_content = content[json_start + len(start_marker) : json_end].strip()
 
-            # Parse the JSON array
+            # Parse the JSON
             try:
-                related_articles_json = json.loads(json_content)
+                data = json.loads(json_content)
 
                 # Validate the structure
-                if not isinstance(related_articles_json, list):
-                    raise ValueError("Parsed JSON is not a list")
+                if not isinstance(data, dict):
+                    raise ValueError("Parsed JSON is not an object")
 
-                for article in related_articles_json:
-                    required_fields = {"title", "taxonomy", "category", "level", "tags"}
-                    if not all(field in article for field in required_fields):
-                        raise ValueError(
-                            f"Article missing required fields: {required_fields - set(article.keys())}"
-                        )
+                if "articles" not in data or "existing_articles_map" not in data:
+                    raise ValueError(
+                        "JSON missing required fields: articles and existing_articles_map"
+                    )
+
+                related_articles = data["articles"]
+                existing_map = data["existing_articles_map"]
+
+                if not isinstance(related_articles, list):
+                    raise ValueError("articles field is not a list")
+
+                if len(related_articles) != 5:
+                    raise ValueError(
+                        f"Expected 5 related articles, got {len(related_articles)}"
+                    )
+
+                # Validate each article
+                for idx, article in enumerate(related_articles):
+                    # If this article is in the existing_map, replace it with a reference
+                    str_idx = str(idx)
+                    if str_idx in existing_map:
+                        related_articles[idx] = {"id": existing_map[str_idx]}
+                    else:
+                        required_fields = {
+                            "title",
+                            "taxonomy",
+                            "category",
+                            "level",
+                            "tags",
+                        }
+                        if not all(field in article for field in required_fields):
+                            raise ValueError(
+                                f"Article missing required fields: {required_fields - set(article.keys())}"
+                            )
+
+                        if article["level"] not in [
+                            "basic",
+                            "intermediate",
+                            "advanced",
+                        ]:
+                            raise ValueError(f"Invalid level value: {article['level']}")
+
+                return article_content, related_articles
 
             except json.JSONDecodeError as e:
                 current_app.logger.error(f"JSON parsing error: {e}")
                 current_app.logger.error(f"Attempted to parse: {json_content}")
                 raise ValueError(f"Failed to parse JSON: {e}")
-
-            return article_content, related_articles_json
 
         except Exception as e:
             current_app.logger.error(f"Error parsing Anthropic response: {e}")
