@@ -1,11 +1,13 @@
+from threading import Thread
 from typing import List, Optional
 
 import strawberry
+from flask import current_app
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from api.articles.models import Article
-from extensions import db
+from services.ai.article_generator import ArticleGenerator
 from .types import ArticleType, TaxonomyStats, CategoryStats, ArticleLevelEnum
 
 
@@ -14,17 +16,32 @@ class Query:
     @strawberry.field(description="Get an article by its slug")
     def article_by_slug(self, slug: str) -> Optional[ArticleType]:
         article = Query.resolve_article_by_slug(slug)
-        if article:
-            # Ensure related articles are loaded
-            _ = article.related_articles
+
+        if article and not article.is_generated:
+            article_generator = ArticleGenerator()
+            app = current_app._get_current_object()
+
+            def generate_with_context():
+                with app.app_context():
+                    article_generator.research_and_generate_article(
+                        article.title,
+                        article.level.value,
+                        article.taxonomy,
+                        article.category,
+                        article.tags,
+                        article.excerpt,
+                    )
+
+            thread = Thread(target=generate_with_context)
+            thread.daemon = True
+            thread.start()
+
         return article
 
     @staticmethod
     def resolve_article_by_slug(slug: str) -> Optional[Article]:
         return (
-            Article.query.options(
-                joinedload(Article.related_articles)  # Eager load related articles
-            )
+            Article.query.options(joinedload(Article.related_articles))
             .filter_by(slug=slug)
             .first()
         )

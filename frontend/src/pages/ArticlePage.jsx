@@ -1,3 +1,4 @@
+import {useState, useEffect} from 'react';
 import {useParams} from 'react-router-dom';
 import {useQuery} from '@apollo/client';
 import ReactMarkdown from 'react-markdown';
@@ -5,11 +6,46 @@ import {GET_ARTICLE} from '../graphql/queries';
 import RelatedArticles from '../components/articles/RelatedArticles';
 import CodeBlock from '../components/articles/CodeBlock';
 
+const LOADING_MESSAGES = [
+  "Teaching GPT-4 how to write better code...",
+  "Consulting Stack Overflow for the millionth time...",
+  "Converting coffee into code explanations...",
+  "Debugging the AI's debugging skills...",
+  "Asking senior developers for their secret sauce...",
+  "Mining Bitcoin to pay for API calls... (just kidding)",
+  "Translating tech jargon into human speak...",
+  "Convincing the algorithm to be more creative...",
+  "Gathering wisdom from ancient programming scrolls...",
+  "Bribing the cache for faster responses..."
+];
+
 function ArticlePage() {
+  const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
   const {slug} = useParams();
-  const {loading, error, data} = useQuery(GET_ARTICLE, {
-    variables: {slug}
+  const {loading, error, data, refetch} = useQuery(GET_ARTICLE, {
+    variables: {slug},
+    pollInterval: 10000,
   });
+
+  useEffect(() => {
+    if (data?.articleBySlug?.isGenerated) {
+      refetch();
+    } else {
+      const interval = setInterval(() => {
+        setLoadingMessage(LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)]);
+      }, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [data?.articleBySlug?.isGenerated, refetch]);
+
+  if (loading || !data?.articleBySlug?.isGenerated) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+        <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mb-4"/>
+        <p className="text-lg text-center animate-pulse">{loadingMessage}</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -75,10 +111,6 @@ function ArticlePage() {
         <ReactMarkdown
           components={{
             code: CodeBlock,
-            h1: ({node, ...props}) => {
-              if (node.position?.start.line === 1) return null;
-              return <h1 {...props} />;
-            }
           }}
         >
           {article.content}

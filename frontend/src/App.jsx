@@ -6,7 +6,14 @@ import ArticlePage from './pages/ArticlePage';
 
 const client = new ApolloClient({
   uri: 'http://localhost:5000/api/graphql',
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'network-only',
+      pollInterval: 5000,
+      timeout: 120000
+    }
+  }
 });
 
 function App() {
