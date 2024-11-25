@@ -2,6 +2,7 @@ from typing import List, Optional
 
 import strawberry
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from api.articles.models import Article
 from extensions import db
@@ -12,21 +13,29 @@ from .types import ArticleType, TaxonomyStats, CategoryStats, ArticleLevelEnum
 class Query:
     @strawberry.field(description="Get an article by its slug")
     def article_by_slug(self, slug: str) -> Optional[ArticleType]:
-        return Query.resolve_article_by_slug(slug)
+        article = Query.resolve_article_by_slug(slug)
+        if article:
+            # Ensure related articles are loaded
+            _ = article.related_articles
+        return article
 
     @staticmethod
-    def resolve_article_by_slug(slug: str) -> Optional[ArticleType]:
-        article = Article.query.filter_by(slug=slug).first()
-        return ArticleType.from_orm(article) if article else None
+    def resolve_article_by_slug(slug: str) -> Optional[Article]:
+        return (
+            Article.query.options(
+                joinedload(Article.related_articles)  # Eager load related articles
+            )
+            .filter_by(slug=slug)
+            .first()
+        )
 
     @strawberry.field(description="Get all articles")
     def all_articles(self) -> List[ArticleType]:
-        return Article.query.order_by(Article.relevance_score.desc()).all()
+        return Query.resolve_all_articles()
 
     @staticmethod
-    def resolve_all_articles() -> List[ArticleType]:
-        articles = Article.query.all()
-        return [ArticleType.from_orm(article) for article in articles]
+    def resolve_all_articles() -> List[Article]:
+        return Article.query.order_by(Article.relevance_score.desc()).all()
 
     @strawberry.field(description="Get articles by taxonomy")
     def articles_by_taxonomy(self, taxonomy: str) -> List[ArticleType]:

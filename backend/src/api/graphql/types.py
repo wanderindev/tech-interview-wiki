@@ -27,10 +27,11 @@ class ArticleType:
     category: str
     tags: List[str]
     content: Optional[str]
-    excerpt: Optional[str]
-    word_count: int
+    excerpt: Optional[str]  # Make sure we include excerpt
     is_generated: bool
+    word_count: int
     updated_at: Optional[str]
+    related_articles: List["ArticleType"]  # Add related articles
 
     @classmethod
     def from_orm(cls, article: Article) -> "ArticleType":
@@ -44,9 +45,14 @@ class ArticleType:
             tags=article.tags,
             content=article.content,
             excerpt=article.excerpt,
-            word_count=article.word_count,
             is_generated=article.is_generated,
+            word_count=article.word_count,
             updated_at=article.updated_at.isoformat() if article.updated_at else None,
+            related_articles=[
+                ArticleType.from_orm(related) for related in article.related_articles
+            ]
+            if article.related_articles
+            else [],
         )
 
 
