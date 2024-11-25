@@ -1,29 +1,9 @@
 import {useParams} from 'react-router-dom';
 import {useQuery} from '@apollo/client';
 import ReactMarkdown from 'react-markdown';
-import {PrismLight as SyntaxHighlighter} from 'react-syntax-highlighter';
-import {oneDark} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {GET_ARTICLE} from '../graphql/queries';
 import RelatedArticles from '../components/articles/RelatedArticles';
-
-const CodeBlock = ({node, inline, className, children, ...props}) => {
-  const match = /language-(\w+)/.exec(className || '');
-  return !inline && match ? (
-    <SyntaxHighlighter
-      style={oneDark}
-      language={match[1]}
-      PreTag="div"
-      className="rounded-lg my-4"
-      {...props}
-    >
-      {String(children).replace(/\n$/, '')}
-    </SyntaxHighlighter>
-  ) : (
-    <code className={className} {...props}>
-      {children}
-    </code>
-  );
-};
+import CodeBlock from '../components/articles/CodeBlock';
 
 function ArticlePage() {
   const {slug} = useParams();
@@ -94,7 +74,11 @@ function ArticlePage() {
         {/* Article content */}
         <ReactMarkdown
           components={{
-            code: CodeBlock
+            code: CodeBlock,
+            h1: ({node, ...props}) => {
+              if (node.position?.start.line === 1) return null;
+              return <h1 {...props} />;
+            }
           }}
         >
           {article.content}
