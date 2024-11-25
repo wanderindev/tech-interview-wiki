@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 
-from cli import populate_db_command
+from cli import populate_db_command, update_word_counts_command
 from config import config
 from extensions import db, migrate, jwt, cors, redis_client
 
@@ -32,6 +32,7 @@ def create_app(config_name=None):
 
     # Register CLI commands
     app.cli.add_command(populate_db_command)
+    app.cli.add_command(update_word_counts_command)
 
     # Configure logging
     if not app.debug:
