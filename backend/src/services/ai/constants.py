@@ -103,19 +103,23 @@ RELATED_ARTICLES_START
 {{
     "articles": [
         {{
-            "title": "Example Title",
+            "title": "New Article Title",
             "taxonomy": "Example Taxonomy",
             "category": "Example Category",
             "level": "basic",
             "tags": ["tag1", "tag2"],
-            "excerpt": "A brief (maximum 50-word) description of this related article that captures its key points and encourages readers to click through."
+            "excerpt": "A brief (maximum 50-word) description..."
         }},
-        ... 4 more articles ...
-    ],
-    "existing_articles_map": {{
-        "0": "ID of existing article if suggestion 1 matches an existing article",
-        "1": "ID of existing article if suggestion 2 matches an existing article"
-    }}
+        {{
+            "id": 123,  // For existing articles, just include the id
+            "title": "Existing Article Title",
+            "taxonomy": "Example Taxonomy",
+            "category": "Example Category",
+            "level": "basic",
+            "tags": ["tag1", "tag2"],
+            "excerpt": "A brief description..."
+        }}
+    ]
 }}
 RELATED_ARTICLES_END
 
