@@ -27,6 +27,7 @@ class ArticleType:
     category: str
     tags: List[str]
     content: Optional[str]
+    excerpt: Optional[str]
     word_count: int
     is_generated: bool
     updated_at: Optional[str]
@@ -42,6 +43,7 @@ class ArticleType:
             category=article.category,
             tags=article.tags,
             content=article.content,
+            excerpt=article.excerpt,
             word_count=article.word_count,
             is_generated=article.is_generated,
             updated_at=article.updated_at.isoformat() if article.updated_at else None,

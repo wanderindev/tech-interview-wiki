@@ -1,6 +1,7 @@
 import enum
 from datetime import datetime, timezone
 
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from extensions import db
@@ -29,6 +30,7 @@ class Article(db.Model):
     content = db.Column(db.Text, nullable=True)
     excerpt = db.Column(db.Text, nullable=True)
     word_count = db.Column(db.Integer, nullable=False, default=0)
+    relevance_score = db.Column(db.Float, nullable=False, default=0.0)
 
     # AI Generation Fields
     research_result = db.Column(db.Text, nullable=True)
@@ -102,6 +104,47 @@ class Article(db.Model):
             self.word_count = len(self.content.split())
         else:
             self.word_count = 0
+
+    def calculate_relevance_score(self):
+        score = 0.0
+
+        # Taxonomy relevance (articles in taxonomy)
+        taxonomy_count = (
+            db.session.query(func.count(Article.id))
+            .filter(Article.taxonomy == self.taxonomy)
+            .scalar()
+        )
+        score += taxonomy_count * (2.0 if self.is_generated else 0.5)
+
+        # Link backs (appearances in related articles)
+        linkback_count = (
+            db.session.query(func.count())
+            .select_from(article_relationships)
+            .filter(article_relationships.c.related_article_id == self.id)
+            .scalar()
+        )
+        score += linkback_count
+
+        # Generation status
+        score += 1.0 if self.is_generated else 0.0
+
+        # Tags count
+        score += len(self.tags)
+
+        # Level score
+        level_scores = {
+            ArticleLevel.BASIC: 0.0,
+            ArticleLevel.INTERMEDIATE: 2.0,
+            ArticleLevel.ADVANCED: 1.0,
+        }
+        score += level_scores[self.level]
+
+        return score
+
+    def update_relevance_score(self):
+        """Update the relevance score and save to database"""
+        self.relevance_score = self.calculate_relevance_score()
+        db.session.commit()
 
 
 article_relationships = db.Table(

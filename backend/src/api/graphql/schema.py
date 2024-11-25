@@ -21,7 +21,7 @@ class Query:
 
     @strawberry.field(description="Get all articles")
     def all_articles(self) -> List[ArticleType]:
-        return Query.resolve_all_articles()
+        return Article.query.order_by(Article.relevance_score.desc()).all()
 
     @staticmethod
     def resolve_all_articles() -> List[ArticleType]:

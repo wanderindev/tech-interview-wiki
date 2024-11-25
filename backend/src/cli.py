@@ -41,3 +41,13 @@ def update_word_counts_command():
         db.session.rollback()
         click.echo(f"Error updating word counts: {str(e)}", err=True)
         raise
+
+
+@click.command("update-relevance-scores")
+@with_appcontext
+def update_relevance_scores_command():
+    """Update relevance scores for all articles."""
+    articles = Article.query.all()
+    for article in articles:
+        article.update_relevance_score()
+    click.echo("Updated relevance scores for all articles.")
