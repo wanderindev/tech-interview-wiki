@@ -27,6 +27,7 @@ class Article(db.Model):
 
     # Content
     content = db.Column(db.Text, nullable=True)
+    excerpt = db.Column(db.Text, nullable=True)
     word_count = db.Column(db.Integer, nullable=False, default=0)
 
     # AI Generation Fields
