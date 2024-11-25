@@ -108,10 +108,14 @@ class AnthropicClient:
                 current_app.logger.error("No 'RELATED_ARTICLES_END' marker found")
                 raise ValueError("Response does not contain end marker")
 
-            # Extract the article content (everything between excerpt and related articles)
-            article_content = content[
-                excerpt_end + len("EXCERPT_END") : json_start
-            ].strip()
+            # Extract the article content (everything between EXCERPT_END and RELATED_ARTICLES_START)
+            article_content_start = excerpt_end + len("EXCERPT_END")
+            article_content = content[article_content_start:json_start].strip()
+
+            # Remove any markdown comments or headers that might appear after EXCERPT_END
+            article_content = re.sub(
+                r"^\[.*?\]\n", "", article_content, flags=re.MULTILINE
+            ).strip()
 
             # Extract and parse the JSON content
             json_content = content[json_start + len(start_marker) : json_end].strip()
@@ -165,18 +169,6 @@ class AnthropicClient:
                             "advanced",
                         ]:
                             raise ValueError(f"Invalid level value: {article['level']}")
-
-                        # Validate excerpt length (approximately 80 words)
-                        if len(article["excerpt"].split()) > 90:  # Give some margin
-                            current_app.logger.warning(
-                                f"Related article excerpt too long: {len(article['excerpt'].split())} words"
-                            )
-
-                # Validate main excerpt length (approximately 80 words)
-                if len(excerpt.split()) > 90:  # Give some margin
-                    current_app.logger.warning(
-                        f"Main excerpt too long: {len(excerpt.split())} words"
-                    )
 
                 return excerpt, article_content, related_articles
 
