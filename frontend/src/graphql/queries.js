@@ -16,8 +16,26 @@ export const GET_ARTICLES = gql`
     }
 `;
 
-// Add artificial delay for development
-export const delayedGetArticles = async () => {
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  return GET_ARTICLES;
-};
+export const GET_ARTICLE = gql`
+    query GetArticle($slug: String!) {
+        articleBySlug(slug: $slug) {
+            id
+            title
+            content
+            taxonomy
+            category
+            tags
+            wordCount
+            isGenerated
+            relatedArticles {
+                id
+                title
+                slug
+                excerpt
+                taxonomy
+                category
+                tags
+            }
+        }
+    }
+`;
