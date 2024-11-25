@@ -9,20 +9,26 @@ export default {
       typography: {
         DEFAULT: {
           css: {
-            maxWidth: 'none',
-            color: '#000',
-            a: {
-              color: '#3182ce',
-              '&:hover': {
-                color: '#2c5282',
-              },
+            'code::before': {
+              content: '""'
             },
-          },
-        },
-      },
-    },
+            'code::after': {
+              content: '""'
+            },
+            'pre code': {
+              color: 'inherit',
+              fontSize: 'inherit',
+              fontWeight: 'inherit',
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: '0',
+            }
+          }
+        }
+      }
+    }
   },
   plugins: [
-    require('@tailwindcss/typography'),
-  ],
+    require('@tailwindcss/typography')
+  ]
 }
