@@ -1,29 +1,23 @@
 import {gql} from '@apollo/client';
 
-export const GET_TAXONOMIES = gql`
-    query GetTaxonomies {
-        allTaxonomies {
-            categories
+export const GET_ARTICLES = gql`
+    query GetArticles {
+        allArticles {
+            id
+            title
+            slug
+            excerpt
             taxonomy
-            totalArticles
+            category
+            tags
+            wordCount
+            isGenerated
         }
     }
 `;
 
-export const GET_ARTICLES_BY_TAXONOMY = gql`
-    query GetArticlesByTaxonomy($taxonomy: String!) {
-        articlesByTaxonomy(taxonomy: $taxonomy) {
-            category
-            content
-            id
-            isGenerated
-            level
-            slug
-            tags
-            taxonomy
-            title
-            updatedAt
-            wordCount
-        }
-    }
-`;
+// Add artificial delay for development
+export const delayedGetArticles = async () => {
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  return GET_ARTICLES;
+};
