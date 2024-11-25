@@ -107,6 +107,7 @@ class DatabasePopulator:
                     taxonomy=article.taxonomy,
                     category=article.category,
                     tags=article.tags,
+                    excerpt=article.excerpt,
                 )
 
                 logger.info(

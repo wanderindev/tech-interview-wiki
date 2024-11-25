@@ -16,7 +16,12 @@ class OpenAIClient:
 
     @staticmethod
     def generate_research_prompt(
-        title: str, level: str, taxonomy: str, category: str, tags: List[str]
+        title: str,
+        level: str,
+        taxonomy: str,
+        category: str,
+        tags: List[str],
+        excerpt: str,
     ) -> str:
         """Generate a research prompt for OpenAI."""
         return RESEARCH_PROMPT_TEMPLATE.format(
@@ -27,6 +32,7 @@ class OpenAIClient:
             category=category,
             tags=", ".join(tags),
             word_limit=RESEARCH_WORD_LIMITS[level],
+            excerpt=excerpt,
         )
 
     def generate_research(self, prompt: str) -> str:

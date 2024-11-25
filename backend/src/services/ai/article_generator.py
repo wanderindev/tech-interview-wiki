@@ -62,7 +62,13 @@ class ArticleGenerator:
         self.openai_client = OpenAIClient()
 
     def research_and_generate_article(
-        self, title: str, level: str, taxonomy: str, category: str, tags: List[str]
+        self,
+        title: str,
+        level: str,
+        taxonomy: str,
+        category: str,
+        tags: List[str],
+        excerpt: str,
     ) -> Tuple[Article, List[Article]]:
         """Complete workflow to research and generate an article."""
         try:
@@ -87,6 +93,7 @@ class ArticleGenerator:
                     taxonomy=taxonomy,
                     category=category,
                     tags=tags,
+                    excerpt=excerpt,
                 )
                 research_document = self.openai_client.generate_research(
                     research_prompt
@@ -158,7 +165,11 @@ class ArticleGenerator:
         ]
 
         # Generate content using Anthropic
-        content, related_articles_data = self.anthropic_client.generate_article_content(
+        (
+            excerpt,
+            content,
+            related_articles_data,
+        ) = self.anthropic_client.generate_article_content(
             title=title,
             level=level,
             taxonomy=taxonomy,
@@ -195,6 +206,7 @@ class ArticleGenerator:
                         category=article_data["category"],
                         tags=article_data["tags"],
                         is_generated=False,
+                        excerpt=article_data["excerpt"],
                     )
                     db.session.add(related_article)
 
@@ -203,6 +215,7 @@ class ArticleGenerator:
         # Update the existing article
         article = Article.query.filter_by(title=title).first()
         article.content = content
+        article.excerpt = excerpt
         article.research_result = research_document
         article.is_generated = True
         article.related_articles = related_articles

@@ -339,4 +339,117 @@ INITIAL_ARTICLES = [
         "level": "basic",
         "tags": ["aws", "s3", "cloudfront", "static-web-hosting", "cdn"],
     },
+    # Additional articles to append to INITIAL_ARTICLES:
+    # Programming Languages - Go
+    {
+        "title": "Goroutines and Channels: Concurrency in Go",
+        "taxonomy": "Programming Languages",
+        "category": "Go",
+        "level": "advanced",
+        "tags": ["go", "concurrency", "goroutines", "channels", "parallelism"],
+    },
+    {
+        "title": "Error Handling Patterns in Go",
+        "taxonomy": "Programming Languages",
+        "category": "Go",
+        "level": "intermediate",
+        "tags": ["go", "error-handling", "patterns", "best-practices"],
+    },
+    # Programming Languages - TypeScript
+    {
+        "title": "Advanced TypeScript Generic Patterns",
+        "taxonomy": "Programming Languages",
+        "category": "TypeScript",
+        "level": "advanced",
+        "tags": ["typescript", "generics", "type-system", "patterns"],
+    },
+    {
+        "title": "TypeScript Type Guards and Narrowing",
+        "taxonomy": "Programming Languages",
+        "category": "TypeScript",
+        "level": "intermediate",
+        "tags": ["typescript", "type-guards", "type-narrowing", "type-safety"],
+    },
+    # Databases - NoSQL
+    {
+        "title": "MongoDB Aggregation Pipeline Deep Dive",
+        "taxonomy": "Databases",
+        "category": "NoSQL",
+        "level": "advanced",
+        "tags": ["mongodb", "aggregation", "pipeline", "queries"],
+    },
+    {
+        "title": "Cassandra Data Modeling Best Practices",
+        "taxonomy": "Databases",
+        "category": "NoSQL",
+        "level": "advanced",
+        "tags": ["cassandra", "data-modeling", "distributed-databases", "nosql"],
+    },
+    {
+        "title": "Redis Caching Strategies and Patterns",
+        "taxonomy": "Databases",
+        "category": "NoSQL",
+        "level": "intermediate",
+        "tags": ["redis", "caching", "patterns", "performance"],
+    },
+    # Web Development - Angular
+    {
+        "title": "Angular Change Detection Strategies",
+        "taxonomy": "Web Development",
+        "category": "Angular",
+        "level": "advanced",
+        "tags": ["angular", "change-detection", "performance", "optimization"],
+    },
+    {
+        "title": "RxJS Operators in Angular Applications",
+        "taxonomy": "Web Development",
+        "category": "Angular",
+        "level": "intermediate",
+        "tags": ["angular", "rxjs", "observables", "reactive-programming"],
+    },
+    # Software Design - Patterns
+    {
+        "title": "Behavioral Design Patterns in Modern Software",
+        "taxonomy": "Software Design",
+        "category": "Design Patterns",
+        "level": "advanced",
+        "tags": ["design-patterns", "behavioral-patterns", "software-architecture"],
+    },
+    {
+        "title": "SOLID Principles: Real-World Examples",
+        "taxonomy": "Software Design",
+        "category": "Design Patterns",
+        "level": "intermediate",
+        "tags": ["solid", "design-principles", "clean-code", "architecture"],
+    },
+    # Security
+    {
+        "title": "OAuth 2.0 and OpenID Connect Implementation",
+        "taxonomy": "Security",
+        "category": "Authentication",
+        "level": "advanced",
+        "tags": ["oauth", "openid-connect", "authentication", "security"],
+    },
+    {
+        "title": "Web Security: XSS and CSRF Prevention",
+        "taxonomy": "Security",
+        "category": "Web Security",
+        "level": "intermediate",
+        "tags": ["security", "xss", "csrf", "web-security"],
+    },
+    # Testing
+    {
+        "title": "Test-Driven Development: A Practical Guide",
+        "taxonomy": "Testing",
+        "category": "Methodologies",
+        "level": "intermediate",
+        "tags": ["tdd", "testing", "unit-tests", "methodologies"],
+    },
+    {
+        "title": "End-to-End Testing Best Practices",
+        "taxonomy": "Testing",
+        "category": "E2E Testing",
+        "level": "intermediate",
+        "tags": ["testing", "e2e", "automation", "cypress", "selenium"],
+    },
 ]

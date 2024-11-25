@@ -64,17 +64,36 @@ class AnthropicClient:
         content = response.content[0].text
 
         # Split content into article and related articles
-        article_content, related_articles_json = AnthropicClient._parse_response(
-            content
-        )
+        (
+            excerpt,
+            article_content,
+            related_articles_json,
+        ) = AnthropicClient._parse_response(content)
 
-        return article_content, related_articles_json
+        return excerpt, article_content, related_articles_json
 
     @staticmethod
-    def _parse_response(content: str) -> Tuple[str, List[Dict]]:
-        """Parse the response to separate article content from related articles."""
+    def _parse_response(content: str) -> Tuple[str, str, List[Dict]]:
+        """
+        Parse the response to separate excerpt, article content, and related articles.
+
+        Returns:
+            Tuple containing (excerpt, article_content, related_articles)
+        """
         try:
-            # Look for the specific markers
+            # Extract excerpt
+            excerpt_start = content.find("EXCERPT_START")
+            excerpt_end = content.find("EXCERPT_END")
+
+            if excerpt_start == -1 or excerpt_end == -1:
+                current_app.logger.error("Missing excerpt markers")
+                raise ValueError("Response does not contain proper excerpt markers")
+
+            excerpt = content[
+                excerpt_start + len("EXCERPT_START") : excerpt_end
+            ].strip()
+
+            # Look for the related articles section
             start_marker = "RELATED_ARTICLES_START"
             end_marker = "RELATED_ARTICLES_END"
 
@@ -89,11 +108,14 @@ class AnthropicClient:
                 current_app.logger.error("No 'RELATED_ARTICLES_END' marker found")
                 raise ValueError("Response does not contain end marker")
 
-            # Extract the article content and JSON content
-            article_content = content[:json_start].strip()
+            # Extract the article content (everything between excerpt and related articles)
+            article_content = content[
+                excerpt_end + len("EXCERPT_END") : json_start
+            ].strip()
+
+            # Extract and parse the JSON content
             json_content = content[json_start + len(start_marker) : json_end].strip()
 
-            # Parse the JSON
             try:
                 data = json.loads(json_content)
 
@@ -130,6 +152,7 @@ class AnthropicClient:
                             "category",
                             "level",
                             "tags",
+                            "excerpt",
                         }
                         if not all(field in article for field in required_fields):
                             raise ValueError(
@@ -143,7 +166,19 @@ class AnthropicClient:
                         ]:
                             raise ValueError(f"Invalid level value: {article['level']}")
 
-                return article_content, related_articles
+                        # Validate excerpt length (approximately 80 words)
+                        if len(article["excerpt"].split()) > 90:  # Give some margin
+                            current_app.logger.warning(
+                                f"Related article excerpt too long: {len(article['excerpt'].split())} words"
+                            )
+
+                # Validate main excerpt length (approximately 80 words)
+                if len(excerpt.split()) > 90:  # Give some margin
+                    current_app.logger.warning(
+                        f"Main excerpt too long: {len(excerpt.split())} words"
+                    )
+
+                return excerpt, article_content, related_articles
 
             except json.JSONDecodeError as e:
                 current_app.logger.error(f"JSON parsing error: {e}")
